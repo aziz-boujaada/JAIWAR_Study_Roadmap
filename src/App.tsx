@@ -7,7 +7,7 @@ import { PresentationDetails } from './components/PresentationDetails';
 import { AddPresentation } from './components/AddPresentation';
 import { presentationsData } from './data';
 import { Presentation } from './types';
-import { createPresentation, fetchPresentations } from './lib/presentationsApi';
+import { createPresentation, deletePresentation, fetchPresentations, updatePresentation } from './lib/presentationsApi';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<string>('dashboard');
@@ -94,6 +94,49 @@ export default function App() {
     handleNavigate('presentations');
   };
 
+  const handleEditPresentation = (presentation: Presentation) => {
+    setSelectedPresentationId(presentation.id);
+    setCurrentPage('edit-presentation');
+  };
+
+  const handleUpdatePresentation = async (updatedPresentation: Presentation) => {
+    try {
+      const savedPresentation = await updatePresentation(updatedPresentation);
+      setPresentations((currentPresentations) =>
+        currentPresentations.map((presentation) =>
+          presentation.id === savedPresentation.id ? savedPresentation : presentation
+        )
+      );
+      setSelectedPresentationId(savedPresentation.id);
+    } catch {
+      setPresentations((currentPresentations) =>
+        currentPresentations.map((presentation) =>
+          presentation.id === updatedPresentation.id ? updatedPresentation : presentation
+        )
+      );
+    }
+
+    handleNavigate('details', updatedPresentation.id);
+  };
+
+  const handleDeletePresentation = async (presentation: Presentation) => {
+    const confirmed = window.confirm(`Delete "${presentation.title}"? This cannot be undone.`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deletePresentation(presentation.id);
+    } catch {
+      // Fall through and remove it locally if the backend is unavailable.
+    }
+
+    setPresentations((currentPresentations) =>
+      currentPresentations.filter((item) => item.id !== presentation.id)
+    );
+    handleNavigate('presentations');
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
@@ -104,6 +147,23 @@ export default function App() {
         return <Presentations presentations={presentations} onNavigate={handleNavigate} />;
       case 'add-presentation':
         return <AddPresentation onAdd={handleAddPresentation} onCancel={() => handleNavigate('presentations')} presentationsCount={presentations.length} />;
+      case 'edit-presentation': {
+        const presentation = presentations.find((item) => item.id === selectedPresentationId);
+        if (!presentation) {
+          return <div className="text-center py-10">Presentation not found</div>;
+        }
+
+        return (
+          <AddPresentation
+            onAdd={handleUpdatePresentation}
+            onCancel={() => handleNavigate('details', presentation.id)}
+            presentationsCount={presentations.length}
+            presentation={presentation}
+            submitLabel="Update Presentation"
+            titleLabel="Edit Presentation"
+          />
+        );
+      }
       case 'details':
         const presentation = presentations.find(p => p.id === selectedPresentationId);
         if (!presentation) {
@@ -113,6 +173,8 @@ export default function App() {
           <PresentationDetails 
             presentation={presentation} 
             onBack={() => handleNavigate('presentations')} 
+            onEdit={handleEditPresentation}
+            onDelete={handleDeletePresentation}
           />
         );
       default:

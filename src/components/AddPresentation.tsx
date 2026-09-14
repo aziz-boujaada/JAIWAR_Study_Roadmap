@@ -7,20 +7,58 @@ interface AddPresentationProps {
   onAdd: (presentation: Presentation) => void | Promise<void>;
   onCancel: () => void;
   presentationsCount: number;
+  presentation?: Presentation;
+  submitLabel?: string;
+  titleLabel?: string;
 }
 
-export const AddPresentation: React.FC<AddPresentationProps> = ({ onAdd, onCancel, presentationsCount }) => {
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [category, setCategory] = useState('');
-  const [status, setStatus] = useState<Status>('Planned');
-  const [shortDescription, setShortDescription] = useState('');
-  const [summary, setSummary] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  
-  const [importantPoints, setImportantPoints] = useState<string[]>(['']);
-  const [concepts, setConcepts] = useState<Concept[]>([]);
-  const [codeExamples, setCodeExamples] = useState<CodeExample[]>([]);
+const getFormState = (presentation?: Presentation) => ({
+  title: presentation?.title ?? '',
+  author: presentation?.author ?? '',
+  category: presentation?.category ?? '',
+  status: presentation?.status ?? ('Planned' as Status),
+  shortDescription: presentation?.shortDescription ?? '',
+  summary: presentation?.summary ?? '',
+  date: presentation?.date ?? new Date().toISOString().split('T')[0],
+  importantPoints: presentation?.importantPoints?.length ? presentation.importantPoints : [''],
+  concepts: presentation?.concepts ?? [],
+  codeExamples: presentation?.codeExamples ?? [],
+});
+
+export const AddPresentation: React.FC<AddPresentationProps> = ({
+  onAdd,
+  onCancel,
+  presentationsCount,
+  presentation,
+  submitLabel = 'Save Presentation',
+  titleLabel = 'Add New Presentation',
+}) => {
+  const [title, setTitle] = useState(() => getFormState(presentation).title);
+  const [author, setAuthor] = useState(() => getFormState(presentation).author);
+  const [category, setCategory] = useState(() => getFormState(presentation).category);
+  const [status, setStatus] = useState<Status>(() => getFormState(presentation).status);
+  const [shortDescription, setShortDescription] = useState(() => getFormState(presentation).shortDescription);
+  const [summary, setSummary] = useState(() => getFormState(presentation).summary);
+  const [date, setDate] = useState(() => getFormState(presentation).date);
+
+  const [importantPoints, setImportantPoints] = useState<string[]>(() => getFormState(presentation).importantPoints);
+  const [concepts, setConcepts] = useState<Concept[]>(() => getFormState(presentation).concepts);
+  const [codeExamples, setCodeExamples] = useState<CodeExample[]>(() => getFormState(presentation).codeExamples);
+
+  React.useEffect(() => {
+    const formState = getFormState(presentation);
+
+    setTitle(formState.title);
+    setAuthor(formState.author);
+    setCategory(formState.category);
+    setStatus(formState.status);
+    setShortDescription(formState.shortDescription);
+    setSummary(formState.summary);
+    setDate(formState.date);
+    setImportantPoints(formState.importantPoints);
+    setConcepts(formState.concepts);
+    setCodeExamples(formState.codeExamples);
+  }, [presentation]);
 
   const handleAddPoint = () => setImportantPoints([...importantPoints, '']);
   const handlePointChange = (index: number, value: string) => {
@@ -61,7 +99,7 @@ export const AddPresentation: React.FC<AddPresentationProps> = ({ onAdd, onCance
     if (!title || !author || !category) return;
 
     const newPresentation: Presentation = {
-      id: Date.now().toString(),
+      id: presentation?.id ?? Date.now().toString(),
       title,
       author,
       category,
@@ -72,7 +110,7 @@ export const AddPresentation: React.FC<AddPresentationProps> = ({ onAdd, onCance
       importantPoints: importantPoints.filter(p => p.trim() !== ''),
       concepts: concepts.filter(c => c.name.trim() !== '' && c.definition.trim() !== ''),
       codeExamples: codeExamples.filter(c => c.title.trim() !== '' && c.code.trim() !== ''),
-      order: presentationsCount + 1,
+      order: presentation?.order ?? presentationsCount + 1,
     };
 
     await onAdd(newPresentation);
@@ -94,7 +132,7 @@ export const AddPresentation: React.FC<AddPresentationProps> = ({ onAdd, onCance
 
       <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-8 tracking-tight">
-          Add New Presentation
+          {titleLabel}
         </h1>
         
         <form onSubmit={handleSubmit} className="space-y-10">
@@ -230,7 +268,7 @@ export const AddPresentation: React.FC<AddPresentationProps> = ({ onAdd, onCance
               Cancel
             </button>
             <button type="submit" className="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors flex items-center gap-2 shadow-sm">
-              <Save className="w-4 h-4" /> Save Presentation
+              <Save className="w-4 h-4" /> {submitLabel}
             </button>
           </div>
         </form>

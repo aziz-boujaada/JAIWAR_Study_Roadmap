@@ -1,15 +1,17 @@
 import React from 'react';
 import { Presentation } from '../types';
 import { motion } from 'motion/react';
-import { ArrowLeft, Calendar, Tag, BookOpen, Lightbulb, Code, CheckCircle, User } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, BookOpen, Lightbulb, Code, CheckCircle, User, Pencil, Trash2 } from 'lucide-react';
 import { StatusBadge } from './Dashboard';
 
 interface PresentationDetailsProps {
   presentation: Presentation;
   onBack: () => void;
+  onEdit: (presentation: Presentation) => void;
+  onDelete: (presentation: Presentation) => void;
 }
 
-export const PresentationDetails: React.FC<PresentationDetailsProps> = ({ presentation, onBack }) => {
+export const PresentationDetails: React.FC<PresentationDetailsProps> = ({ presentation, onBack, onEdit, onDelete }) => {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 15 }}
@@ -26,6 +28,22 @@ export const PresentationDetails: React.FC<PresentationDetailsProps> = ({ presen
 
       {/* Header */}
       <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 mb-8">
+        <div className="mb-6 flex justify-end gap-3">
+          <button
+            onClick={() => onEdit(presentation)}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+          >
+            <Pencil className="w-4 h-4" />
+            Edit
+          </button>
+          <button
+            onClick={() => onDelete(presentation)}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete
+          </button>
+        </div>
         <h1 className="text-4xl font-extrabold text-gray-900 mb-6 tracking-tight">
           {presentation.title}
         </h1>
