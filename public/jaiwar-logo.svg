@@ -1,0 +1,29 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" rx="96" fill="#050505"/>
+  <defs>
+    <linearGradient id="gold" x1="147" y1="156" x2="871" y2="871" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF1A8"/>
+      <stop offset="0.38" stop-color="#FFC94A"/>
+      <stop offset="0.72" stop-color="#C88900"/>
+      <stop offset="1" stop-color="#FFF4C4"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="204" y1="562" x2="830" y2="562" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7F7F7"/>
+      <stop offset="0.55" stop-color="#D9D9D9"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+  <circle cx="512" cy="440" r="326" stroke="url(#gold)" stroke-width="18" opacity="0.95"/>
+  <circle cx="512" cy="440" r="295" stroke="url(#gold)" stroke-width="4" opacity="0.65" stroke-dasharray="10 18"/>
+  <path d="M512 110C548 170 582 214 582 260C582 321 528 352 512 370C490 349 450 320 450 261C450 214 486 170 512 110Z" fill="url(#gold)"/>
+  <path d="M412 355C442 326 470 318 512 318C558 318 594 333 620 362C634 378 645 398 651 420C596 448 556 458 511 458C468 458 428 448 372 421C379 393 392 373 412 355Z" fill="url(#silver)"/>
+  <path d="M398 458C427 486 464 498 512 498C560 498 596 486 625 459C628 500 622 534 602 568C578 610 540 628 512 628C484 628 446 610 422 568C402 534 396 500 398 458Z" fill="url(#silver)"/>
+  <path d="M702 412C744 412 776 436 776 474C776 519 742 550 698 550C677 550 658 544 640 534C664 514 676 490 676 464C676 447 670 430 661 417C673 413 687 412 702 412Z" fill="url(#silver)"/>
+  <path d="M235 482C266 459 300 448 332 448C351 448 368 451 384 458C372 475 366 493 366 512C366 529 371 545 381 560C352 568 320 565 291 551C256 535 236 508 235 482Z" fill="url(#gold)" opacity="0.95"/>
+  <path d="M214 770C297 813 404 840 512 840C620 840 727 813 810 770" stroke="url(#gold)" stroke-width="16" stroke-linecap="round"/>
+  <path d="M292 775C357 800 431 812 512 812C593 812 667 800 732 775" stroke="url(#silver)" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+  <path d="M196 530H828" stroke="url(#gold)" stroke-width="10" stroke-linecap="round" opacity="0.85"/>
+  <path d="M272 725H752" stroke="url(#gold)" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
+  <text x="512" y="635" text-anchor="middle" font-size="128" font-family="Arial, Helvetica, sans-serif" font-weight="900" letter-spacing="10" fill="url(#silver)">JAIWAR</text>
+  <text x="512" y="902" text-anchor="middle" font-size="32" font-family="Arial, Helvetica, sans-serif" font-weight="700" letter-spacing="9" fill="url(#gold)">CODE • LEARN • BUILD • CONQUER</text>
+</svg>

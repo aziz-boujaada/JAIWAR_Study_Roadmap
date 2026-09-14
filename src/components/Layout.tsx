@@ -20,10 +20,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
       <aside className="w-full md:w-64 bg-white border-r border-gray-200 flex-shrink-0 z-20 sticky top-0 md:h-screen">
         <div className="p-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-              <Map className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900 tracking-tight">Study Roadmap</span>
+            <img
+              src="/jaiwar-logo.svg"
+              alt="JAIWAR logo"
+              className="w-10 h-10 rounded-full object-cover shadow-sm ring-1 ring-gray-200"
+            />
+            <span className="text-xl font-bold text-gray-900 tracking-tight">JAIWAR</span>
           </div>
         </div>
         

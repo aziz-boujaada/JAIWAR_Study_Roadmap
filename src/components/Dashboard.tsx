@@ -28,9 +28,37 @@ export const Dashboard: React.FC<DashboardProps> = ({ presentations, onNavigate 
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
-        <p className="text-gray-500 mt-2">Overview of your learning journey and upcoming topics.</p>
+      <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-6 items-stretch">
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-white to-gray-50 pointer-events-none" />
+          <div className="relative flex flex-col justify-between h-full gap-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
+              <p className="text-gray-500 mt-2 max-w-xl">Overview of your learning journey and upcoming topics.</p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <img
+                src="/jaiwar-logo.svg"
+                alt="JAIWAR logo"
+                className="w-24 h-24 rounded-2xl object-cover shadow-lg ring-1 ring-gray-200 bg-black"
+              />
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-gray-400 font-semibold">Brand</p>
+                <p className="text-2xl font-extrabold text-gray-900 tracking-tight">JAIWAR</p>
+                <p className="text-sm text-gray-500 mt-1">Code • Learn • Build • Conquer</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-black rounded-3xl p-4 shadow-sm border border-gray-900 overflow-hidden flex items-center justify-center min-h-[220px]">
+          <img
+            src="/jaiwar-logo.svg"
+            alt="JAIWAR logo"
+            className="w-full max-w-[260px] h-auto object-contain drop-shadow-[0_12px_35px_rgba(255,196,77,0.35)]"
+          />
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">

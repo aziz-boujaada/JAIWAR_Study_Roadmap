@@ -36,30 +36,22 @@ export default function App() {
           return;
         }
 
-        if (remotePresentations.length > 0) {
-          setPresentations(remotePresentations);
-          return;
-        }
-
+        setPresentations(remotePresentations);
+      } catch {
         const saved = localStorage.getItem('study_roadmap_presentations');
-        if (!saved) {
+
+        if (saved && !cancelled) {
+          try {
+            setPresentations(JSON.parse(saved));
+          } catch {
+            setPresentations(presentationsData);
+          }
           return;
         }
-
-        const localPresentations = JSON.parse(saved) as Presentation[];
-        if (localPresentations.length === 0) {
-          return;
-        }
-
-        const seededPresentations = await Promise.all(
-          localPresentations.map((presentation) => createPresentation(presentation))
-        );
 
         if (!cancelled) {
-          setPresentations(seededPresentations);
+          setPresentations(presentationsData);
         }
-      } catch {
-        // Keep the current local state when the backend is unavailable.
       }
     };
 
