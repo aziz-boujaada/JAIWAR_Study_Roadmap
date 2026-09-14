@@ -7,6 +7,7 @@ import { PresentationDetails } from './components/PresentationDetails';
 import { AddPresentation } from './components/AddPresentation';
 import { presentationsData } from './data';
 import { Presentation } from './types';
+import { createPresentation, fetchPresentations } from './lib/presentationsApi';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<string>('dashboard');
@@ -25,6 +26,51 @@ export default function App() {
   });
 
   React.useEffect(() => {
+    let cancelled = false;
+
+    const syncPresentations = async () => {
+      try {
+        const remotePresentations = await fetchPresentations();
+
+        if (cancelled) {
+          return;
+        }
+
+        if (remotePresentations.length > 0) {
+          setPresentations(remotePresentations);
+          return;
+        }
+
+        const saved = localStorage.getItem('study_roadmap_presentations');
+        if (!saved) {
+          return;
+        }
+
+        const localPresentations = JSON.parse(saved) as Presentation[];
+        if (localPresentations.length === 0) {
+          return;
+        }
+
+        const seededPresentations = await Promise.all(
+          localPresentations.map((presentation) => createPresentation(presentation))
+        );
+
+        if (!cancelled) {
+          setPresentations(seededPresentations);
+        }
+      } catch {
+        // Keep the current local state when the backend is unavailable.
+      }
+    };
+
+    syncPresentations();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  React.useEffect(() => {
     localStorage.setItem('study_roadmap_presentations', JSON.stringify(presentations));
   }, [presentations]);
 
@@ -37,8 +83,14 @@ export default function App() {
     }
   };
 
-  const handleAddPresentation = (newPres: Presentation) => {
-    setPresentations([...presentations, newPres]);
+  const handleAddPresentation = async (newPres: Presentation) => {
+    try {
+      const savedPresentation = await createPresentation(newPres);
+      setPresentations((currentPresentations) => [...currentPresentations, savedPresentation]);
+    } catch {
+      setPresentations((currentPresentations) => [...currentPresentations, newPres]);
+    }
+
     handleNavigate('presentations');
   };
 

@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 
 interface AddPresentationProps {
-  onAdd: (presentation: Presentation) => void;
+  onAdd: (presentation: Presentation) => void | Promise<void>;
   onCancel: () => void;
   presentationsCount: number;
 }
@@ -56,7 +56,7 @@ export const AddPresentation: React.FC<AddPresentationProps> = ({ onAdd, onCance
     setCodeExamples(codeExamples.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !author || !category) return;
 
@@ -75,7 +75,7 @@ export const AddPresentation: React.FC<AddPresentationProps> = ({ onAdd, onCance
       order: presentationsCount + 1,
     };
 
-    onAdd(newPresentation);
+    await onAdd(newPresentation);
   };
 
   return (

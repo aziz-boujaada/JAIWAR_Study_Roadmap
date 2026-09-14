@@ -141,10 +141,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ presentations, onNavigate 
   );
 };
 
-const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: number, color: string }) => (
+const StatCard = ({ icon, label, value, color }: { icon: React.ReactElement<{ className?: string }>, label: string, value: number, color: string }) => (
   <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color}`}>
-      {React.cloneElement(icon as React.ReactElement, { className: 'w-6 h-6' })}
+      {React.cloneElement<{ className?: string }>(icon, { className: 'w-6 h-6' })}
     </div>
     <div>
       <div className="text-2xl font-bold text-gray-900">{value}</div>
