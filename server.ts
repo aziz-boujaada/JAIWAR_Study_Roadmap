@@ -174,10 +174,19 @@ app.put('/api/presentations/:id', (request, response) => {
 });
 
 app.delete('/api/presentations/:id', (request, response) => {
+  const existingPresentation = selectPresentationById.get(request.params.id);
+
+  if (!existingPresentation) {
+    response.status(404).json({ message: 'Presentation not found' });
+    return;
+  }
+
   const result = deletePresentation.run(request.params.id);
 
-  if (result.changes === 0) {
-    response.status(404).json({ message: 'Presentation not found' });
+  const deletedPresentation = selectPresentationById.get(request.params.id);
+
+  if (deletedPresentation) {
+    response.status(500).json({ message: 'Delete failed' });
     return;
   }
 

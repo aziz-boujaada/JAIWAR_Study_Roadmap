@@ -13,17 +13,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<string>('dashboard');
   const [selectedPresentationId, setSelectedPresentationId] = useState<string | null>(null);
 
-  const [presentations, setPresentations] = useState<Presentation[]>(() => {
-    const saved = localStorage.getItem('study_roadmap_presentations');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return [];
-      }
-    }
-    return presentationsData;
-  });
+  const [presentations, setPresentations] = useState<Presentation[]>([]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -38,17 +28,6 @@ export default function App() {
 
         setPresentations(remotePresentations);
       } catch {
-        const saved = localStorage.getItem('study_roadmap_presentations');
-
-        if (saved && !cancelled) {
-          try {
-            setPresentations(JSON.parse(saved));
-          } catch {
-            setPresentations(presentationsData);
-          }
-          return;
-        }
-
         if (!cancelled) {
           setPresentations(presentationsData);
         }
@@ -78,7 +57,8 @@ export default function App() {
   const handleAddPresentation = async (newPres: Presentation) => {
     try {
       const savedPresentation = await createPresentation(newPres);
-      setPresentations((currentPresentations) => [...currentPresentations, savedPresentation]);
+      const refreshedPresentations = await fetchPresentations();
+      setPresentations(refreshedPresentations.length > 0 ? refreshedPresentations : [...presentations, savedPresentation]);
     } catch {
       setPresentations((currentPresentations) => [...currentPresentations, newPres]);
     }
@@ -94,11 +74,8 @@ export default function App() {
   const handleUpdatePresentation = async (updatedPresentation: Presentation) => {
     try {
       const savedPresentation = await updatePresentation(updatedPresentation);
-      setPresentations((currentPresentations) =>
-        currentPresentations.map((presentation) =>
-          presentation.id === savedPresentation.id ? savedPresentation : presentation
-        )
-      );
+      const refreshedPresentations = await fetchPresentations();
+      setPresentations(refreshedPresentations.length > 0 ? refreshedPresentations : [savedPresentation]);
       setSelectedPresentationId(savedPresentation.id);
     } catch {
       setPresentations((currentPresentations) =>

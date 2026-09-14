@@ -81,13 +81,28 @@ export default async function handler(request: any, response: any) {
   }
 
   if (request.method === 'DELETE') {
+    const existing = await database.execute({
+      sql: 'SELECT id FROM presentations WHERE id = ?',
+      args: [id],
+    });
+
+    if (existing.rows.length === 0) {
+      response.status(404).json({ message: 'Presentation not found' });
+      return;
+    }
+
     const result = await database.execute({
       sql: 'DELETE FROM presentations WHERE id = ?',
       args: [id],
     });
 
-    if (result.rowsAffected === 0) {
-      response.status(404).json({ message: 'Presentation not found' });
+    const deleted = await database.execute({
+      sql: 'SELECT id FROM presentations WHERE id = ?',
+      args: [id],
+    });
+
+    if (deleted.rows.length > 0) {
+      response.status(500).json({ message: 'Delete failed' });
       return;
     }
 
