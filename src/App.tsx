@@ -96,8 +96,9 @@ export default function App() {
 
     try {
       await deletePresentation(presentation.id);
-      const refreshedPresentations = await fetchPresentations();
-      setPresentations(refreshedPresentations);
+      setPresentations((currentPresentations) =>
+        currentPresentations.filter((item) => item.id !== presentation.id)
+      );
       handleNavigate('presentations');
     } catch {
       window.alert('Delete failed on the backend. The presentation was not removed from SQLite.');
