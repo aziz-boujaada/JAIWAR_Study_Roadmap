@@ -1,0 +1,8 @@
+{
+  "name": "Study Roadmap",
+  "description": "A visual learning roadmap and knowledge base for students to organize technical presentations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
