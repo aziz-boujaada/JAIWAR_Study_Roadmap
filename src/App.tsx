@@ -119,14 +119,12 @@ export default function App() {
 
     try {
       await deletePresentation(presentation.id);
+      const refreshedPresentations = await fetchPresentations();
+      setPresentations(refreshedPresentations);
+      handleNavigate('presentations');
     } catch {
-      // Fall through and remove it locally if the backend is unavailable.
+      window.alert('Delete failed on the backend. The presentation was not removed from SQLite.');
     }
-
-    setPresentations((currentPresentations) =>
-      currentPresentations.filter((item) => item.id !== presentation.id)
-    );
-    handleNavigate('presentations');
   };
 
   const renderPage = () => {
