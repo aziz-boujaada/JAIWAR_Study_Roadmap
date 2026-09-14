@@ -21,9 +21,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
         <div className="p-6">
           <div className="flex items-center gap-3">
             <img
-              src="/jaiwar-logo.svg"
+              src="/image.png"
               alt="JAIWAR logo"
-              className="w-10 h-10 rounded-full object-cover shadow-sm ring-1 ring-gray-200"
+              className="w-12 h-12 rounded-2xl object-contain bg-black shadow-sm ring-1 ring-gray-200"
             />
             <span className="text-xl font-bold text-gray-900 tracking-tight">JAIWAR</span>
           </div>

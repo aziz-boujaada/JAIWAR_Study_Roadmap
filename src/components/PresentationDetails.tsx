@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Presentation } from '../types';
 import { motion } from 'motion/react';
 import { ArrowLeft, Calendar, Tag, BookOpen, Lightbulb, Code, CheckCircle, User, Pencil, Trash2 } from 'lucide-react';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github-dark.css';
 import { StatusBadge } from './Dashboard';
 
 interface PresentationDetailsProps {
@@ -12,6 +14,19 @@ interface PresentationDetailsProps {
 }
 
 export const PresentationDetails: React.FC<PresentationDetailsProps> = ({ presentation, onBack, onEdit, onDelete }) => {
+  const highlightedExamples = useMemo(() => {
+    return presentation.codeExamples.map((example) => {
+      const detected = hljs.highlightAuto(example.code);
+      const languageLabel = detected.language ?? example.language?.trim() ?? 'text';
+
+      return {
+        ...example,
+        highlightedCode: detected.value,
+        detectedLanguage: languageLabel,
+      };
+    });
+  }, [presentation.codeExamples]);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 15 }}
@@ -163,15 +178,20 @@ export const PresentationDetails: React.FC<PresentationDetailsProps> = ({ presen
             </div>
             
             <div className="space-y-6">
-              {presentation.codeExamples.map((example, index) => (
+              {highlightedExamples.map((example, index) => (
                 <div key={index} className="rounded-2xl overflow-hidden shadow-sm border border-gray-200">
                   <div className="px-4 py-3 bg-gray-900 flex justify-between items-center border-b border-gray-800">
                     <span className="text-sm font-medium text-gray-200">{example.title}</span>
-                    <span className="text-xs font-mono text-gray-500 uppercase">{example.language}</span>
+                    <span className="text-xs font-mono text-gray-400 uppercase tracking-wider">
+                      {example.detectedLanguage}
+                    </span>
                   </div>
                   <div className="bg-gray-950 p-6 overflow-x-auto">
-                    <pre className="text-sm font-mono text-gray-300">
-                      <code>{example.code}</code>
+                    <pre className="text-sm font-mono leading-6">
+                      <code
+                        className="hljs"
+                        dangerouslySetInnerHTML={{ __html: example.highlightedCode }}
+                      />
                     </pre>
                   </div>
                 </div>
