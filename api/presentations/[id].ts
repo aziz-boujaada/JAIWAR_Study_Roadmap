@@ -1,5 +1,5 @@
 import type { Presentation } from '../../src/types';
-import { getDatabase, presentationColumns, presentationToArgs, rowToPresentation } from '../_db';
+import { getDatabase, presentationColumns, presentationToArgs, rowToPresentation } from '../_db.js';
 
 function parseBody(body: unknown): Presentation {
   if (typeof body === 'string') {
