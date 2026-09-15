@@ -1,4 +1,4 @@
-import { Presentation } from '../types';
+import { Presentation, Comment } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
 
@@ -44,5 +44,36 @@ export function updatePresentation(presentation: Presentation) {
 export function deletePresentation(id: string) {
   return requestJson<void>(`/api/presentations/${id}`, {
     method: 'DELETE',
+  });
+}
+
+export function fetchComments(presentationId: string) {
+  return requestJson<Comment[]>(`/api/presentations/${presentationId}/comments`);
+}
+
+export function addComment(presentationId: string, comment: Partial<Comment>) {
+  return requestJson<Comment>(`/api/presentations/${presentationId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify(comment),
+  });
+}
+
+export function updateComment(presentationId: string, comment: Comment) {
+  return requestJson<Comment>(`/api/presentations/${presentationId}/comments/${comment.id}`, {
+    method: 'PUT',
+    body: JSON.stringify(comment),
+  });
+}
+
+export function deleteComment(presentationId: string, commentId: string) {
+  return requestJson<void>(`/api/presentations/${presentationId}/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+}
+
+export function likePresentation(presentationId: string, liked: boolean) {
+  return requestJson<{ likes: number }>(`/api/presentations/${presentationId}/like`, {
+    method: 'POST',
+    body: JSON.stringify({ liked }),
   });
 }

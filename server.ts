@@ -4,7 +4,7 @@ import Database from 'better-sqlite3';
 import { existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Presentation } from './src/types';
+import type { Presentation, Comment } from './src/types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,9 +30,33 @@ database.exec(`
     importantPoints TEXT NOT NULL,
     concepts TEXT NOT NULL,
     codeExamples TEXT NOT NULL,
-    sortOrder INTEGER NOT NULL
+    sortOrder INTEGER NOT NULL,
+    presentationLink TEXT DEFAULT '',
+    likes INTEGER DEFAULT 0
   )
 `);
+
+database.exec(`
+  CREATE TABLE IF NOT EXISTS comments (
+    id TEXT PRIMARY KEY,
+    presentationId TEXT NOT NULL,
+    author TEXT NOT NULL,
+    text TEXT NOT NULL,
+    date TEXT NOT NULL,
+    FOREIGN KEY (presentationId) REFERENCES presentations(id) ON DELETE CASCADE
+  )
+`);
+
+const presentationColumns = database.prepare('PRAGMA table_info(presentations)').all() as { name: string }[];
+const existingColumnNames = new Set(presentationColumns.map((column) => column.name));
+
+if (!existingColumnNames.has('presentationLink')) {
+  database.exec('ALTER TABLE presentations ADD COLUMN presentationLink TEXT DEFAULT \'\'');
+}
+
+if (!existingColumnNames.has('likes')) {
+  database.exec('ALTER TABLE presentations ADD COLUMN likes INTEGER DEFAULT 0');
+}
 
 const selectAllPresentations = database.prepare(
   'SELECT * FROM presentations ORDER BY sortOrder ASC, date DESC'
@@ -51,8 +75,10 @@ const insertPresentation = database.prepare(`
     importantPoints,
     concepts,
     codeExamples,
-    sortOrder
-  ) VALUES (@id, @title, @author, @category, @date, @status, @shortDescription, @summary, @importantPoints, @concepts, @codeExamples, @sortOrder)
+    sortOrder,
+    presentationLink,
+    likes
+  ) VALUES (@id, @title, @author, @category, @date, @status, @shortDescription, @summary, @importantPoints, @concepts, @codeExamples, @sortOrder, @presentationLink, @likes)
 `);
 const updatePresentation = database.prepare(`
   UPDATE presentations SET
@@ -66,11 +92,27 @@ const updatePresentation = database.prepare(`
     importantPoints = @importantPoints,
     concepts = @concepts,
     codeExamples = @codeExamples,
-    sortOrder = @sortOrder
+    sortOrder = @sortOrder,
+    presentationLink = @presentationLink,
+    likes = @likes
   WHERE id = @id
 `);
 const deletePresentation = database.prepare('DELETE FROM presentations WHERE id = ?');
 const selectMaxSortOrder = database.prepare('SELECT COALESCE(MAX(sortOrder), 0) AS maxSortOrder FROM presentations');
+
+const selectCommentsByPresentation = database.prepare('SELECT * FROM comments WHERE presentationId = ? ORDER BY date DESC');
+const selectCommentById = database.prepare('SELECT * FROM comments WHERE id = ?');
+const insertComment = database.prepare(`
+  INSERT INTO comments (id, presentationId, author, text, date)
+  VALUES (@id, @presentationId, @author, @text, @date)
+`);
+const updateComment = database.prepare(`
+  UPDATE comments SET author = @author, text = @text WHERE id = @id
+`);
+const deleteComment = database.prepare('DELETE FROM comments WHERE id = ?');
+
+const incrementLikes = database.prepare('UPDATE presentations SET likes = likes + 1 WHERE id = ?');
+const decrementLikes = database.prepare('UPDATE presentations SET likes = likes - 1 WHERE id = ?');
 
 function toPresentation(row: any): Presentation {
   return {
@@ -86,6 +128,8 @@ function toPresentation(row: any): Presentation {
     concepts: JSON.parse(row.concepts),
     codeExamples: JSON.parse(row.codeExamples),
     order: row.sortOrder,
+    presentationLink: row.presentationLink ?? '',
+    likes: row.likes ?? 0,
   };
 }
 
@@ -103,6 +147,18 @@ function toDatabaseRow(presentation: Presentation, sortOrder: number) {
     concepts: JSON.stringify(presentation.concepts),
     codeExamples: JSON.stringify(presentation.codeExamples),
     sortOrder,
+    presentationLink: presentation.presentationLink ?? '',
+    likes: presentation.likes ?? 0,
+  };
+}
+
+function toComment(row: any): Comment {
+  return {
+    id: row.id,
+    presentationId: row.presentationId,
+    author: row.author,
+    text: row.text,
+    date: row.date,
   };
 }
 
@@ -191,6 +247,111 @@ app.delete('/api/presentations/:id', (request, response) => {
   }
 
   response.status(204).send();
+});
+
+app.get('/api/presentations/:id/comments', (request, response) => {
+  const presentation = selectPresentationById.get(request.params.id);
+
+  if (!presentation) {
+    response.status(404).json({ message: 'Presentation not found' });
+    return;
+  }
+
+  const rows = selectCommentsByPresentation.all(request.params.id);
+  response.json(rows.map(toComment));
+});
+
+app.post('/api/presentations/:id/comments', (request, response) => {
+  const presentation = selectPresentationById.get(request.params.id);
+
+  if (!presentation) {
+    response.status(404).json({ message: 'Presentation not found' });
+    return;
+  }
+
+  const comment: Partial<Comment> = request.body ?? {};
+  const newComment: Comment = {
+    id: comment.id ?? Date.now().toString(),
+    presentationId: request.params.id,
+    author: comment.author?.trim() || 'Anonymous',
+    text: comment.text?.trim() || '',
+    date: comment.date ?? new Date().toISOString(),
+  };
+
+  if (!newComment.text) {
+    response.status(400).json({ message: 'Comment text is required' });
+    return;
+  }
+
+  insertComment.run(newComment);
+  response.status(201).json(newComment);
+});
+
+app.put('/api/presentations/:id/comments/:commentId', (request, response) => {
+  const existingComment = selectCommentById.get(request.params.commentId) as Comment | undefined;
+
+  if (!existingComment) {
+    response.status(404).json({ message: 'Comment not found' });
+    return;
+  }
+
+  const body: Partial<Comment> = request.body ?? {};
+  const updatedComment = {
+    ...toComment(existingComment),
+    author: body.author?.trim() || existingComment.author,
+    text: body.text?.trim() || '',
+  };
+
+  if (!updatedComment.text) {
+    response.status(400).json({ message: 'Comment text is required' });
+    return;
+  }
+
+  updateComment.run({ id: updatedComment.id, author: updatedComment.author, text: updatedComment.text });
+  response.json(updatedComment);
+});
+
+app.delete('/api/presentations/:id/comments/:commentId', (request, response) => {
+  const existingComment = selectCommentById.get(request.params.commentId);
+
+  if (!existingComment) {
+    response.status(404).json({ message: 'Comment not found' });
+    return;
+  }
+
+  deleteComment.run(request.params.commentId);
+  response.status(204).send();
+});
+
+app.post('/api/presentations/:id/like', (request, response) => {
+  const existingPresentation = selectPresentationById.get(request.params.id);
+
+  if (!existingPresentation) {
+    response.status(404).json({ message: 'Presentation not found' });
+    return;
+  }
+
+  incrementLikes.run(request.params.id);
+  const updated = selectPresentationById.get(request.params.id) as { likes: number };
+  response.json({ likes: updated.likes });
+});
+
+app.post('/api/presentations/:id/unlike', (request, response) => {
+  const existingPresentation = selectPresentationById.get(request.params.id);
+
+  if (!existingPresentation) {
+    response.status(404).json({ message: 'Presentation not found' });
+    return;
+  }
+
+  const current = existingPresentation as { likes: number };
+
+  if ((current.likes ?? 0) > 0) {
+    decrementLikes.run(request.params.id);
+  }
+
+  const updated = selectPresentationById.get(request.params.id) as { likes: number };
+  response.json({ likes: updated.likes });
 });
 
 if (existsSync(clientIndexPath)) {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Presentation } from '../types';
 import { motion } from 'motion/react';
-import { Search, Filter, ArrowUpDown, User } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, User, Heart, Link as LinkIcon } from 'lucide-react';
 import { StatusBadge } from './Dashboard';
 
 interface PresentationsProps {
@@ -136,6 +136,19 @@ export const Presentations: React.FC<PresentationsProps> = ({ presentations, onN
               </div>
               
               <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Heart className={`w-3.5 h-3.5 ${(presentation.likes ?? 0) > 0 ? 'text-red-500 fill-red-500' : ''}`} />
+                      {presentation.likes ?? 0}
+                    </span>
+                    {presentation.presentationLink && (
+                      <span className="inline-flex items-center gap-1.5 text-indigo-600">
+                        <LinkIcon className="w-3.5 h-3.5" />
+                      </span>
+                    )}
+                  </div>
+                </div>
                 <button
                   onClick={() => onNavigate('details', presentation.id)}
                   className="w-full py-2 px-4 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

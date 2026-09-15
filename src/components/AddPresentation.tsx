@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Presentation, Status, Concept, CodeExample } from '../types';
 import { motion } from 'motion/react';
-import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Link as LinkIcon } from 'lucide-react';
 
 interface AddPresentationProps {
   onAdd: (presentation: Presentation) => void | Promise<void>;
@@ -23,6 +23,7 @@ const getFormState = (presentation?: Presentation) => ({
   importantPoints: presentation?.importantPoints?.length ? presentation.importantPoints : [''],
   concepts: presentation?.concepts ?? [],
   codeExamples: presentation?.codeExamples ?? [],
+  presentationLink: presentation?.presentationLink ?? '',
 });
 
 export const AddPresentation: React.FC<AddPresentationProps> = ({
@@ -44,6 +45,7 @@ export const AddPresentation: React.FC<AddPresentationProps> = ({
   const [importantPoints, setImportantPoints] = useState<string[]>(() => getFormState(presentation).importantPoints);
   const [concepts, setConcepts] = useState<Concept[]>(() => getFormState(presentation).concepts);
   const [codeExamples, setCodeExamples] = useState<CodeExample[]>(() => getFormState(presentation).codeExamples);
+  const [presentationLink, setPresentationLink] = useState(() => getFormState(presentation).presentationLink);
 
   React.useEffect(() => {
     const formState = getFormState(presentation);
@@ -58,6 +60,7 @@ export const AddPresentation: React.FC<AddPresentationProps> = ({
     setImportantPoints(formState.importantPoints);
     setConcepts(formState.concepts);
     setCodeExamples(formState.codeExamples);
+    setPresentationLink(formState.presentationLink);
   }, [presentation]);
 
   const handleAddPoint = () => setImportantPoints([...importantPoints, '']);
@@ -111,6 +114,8 @@ export const AddPresentation: React.FC<AddPresentationProps> = ({
       concepts: concepts.filter(c => c.name.trim() !== '' && c.definition.trim() !== ''),
       codeExamples: codeExamples.filter(c => c.title.trim() !== '' && c.code.trim() !== ''),
       order: presentation?.order ?? presentationsCount + 1,
+      presentationLink: presentationLink.trim(),
+      likes: presentation?.likes ?? 0,
     };
 
     await onAdd(newPresentation);
@@ -163,6 +168,15 @@ export const AddPresentation: React.FC<AddPresentationProps> = ({
                   <option value="In Progress">In Progress</option>
                   <option value="Completed">Completed</option>
                 </select>
+              </div>
+            </div>
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Presentation Link</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <LinkIcon className="w-4 h-4 text-gray-400" />
+                </div>
+                <input type="url" value={presentationLink} onChange={e => setPresentationLink(e.target.value)} className="w-full pl-10 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="https://example.com/presentation" />
               </div>
             </div>
             <div>

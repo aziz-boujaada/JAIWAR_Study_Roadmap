@@ -25,7 +25,7 @@ export default async function handler(request: any, response: any) {
     const sortOrder = Number.isFinite(presentation.order) ? presentation.order : currentMaxSortOrder + 1;
 
     await database.execute({
-      sql: `INSERT INTO presentations (${presentationColumns}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO presentations (${presentationColumns}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: presentationToArgs({ ...presentation, order: sortOrder }, sortOrder),
     });
 

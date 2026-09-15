@@ -105,6 +105,14 @@ export default function App() {
     }
   };
 
+  const handleLike = (presentationId: string, newLikes: number) => {
+    setPresentations((currentPresentations) =>
+      currentPresentations.map((p) =>
+        p.id === presentationId ? { ...p, likes: newLikes } : p
+      )
+    );
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
@@ -143,6 +151,7 @@ export default function App() {
             onBack={() => handleNavigate('presentations')} 
             onEdit={handleEditPresentation}
             onDelete={handleDeletePresentation}
+            onLike={handleLike}
           />
         );
       default:

@@ -70,7 +70,9 @@ export default async function handler(request: any, response: any) {
           importantPoints = ?,
           concepts = ?,
           codeExamples = ?,
-          sortOrder = ?
+          sortOrder = ?,
+          presentationLink = ?,
+          likes = ?
         WHERE id = ?
       `,
       args: [...presentationToArgs({ ...presentation, id }, sortOrder).slice(1), id],

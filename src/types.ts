@@ -14,6 +14,14 @@ export interface CodeExample {
   code: string;
 }
 
+export interface Comment {
+  id: string;
+  presentationId: string;
+  author: string;
+  text: string;
+  date: string;
+}
+
 export interface Presentation {
   id: string;
   title: string;
@@ -27,4 +35,6 @@ export interface Presentation {
   concepts: Concept[];
   codeExamples: CodeExample[];
   order: number;
+  presentationLink?: string;
+  likes: number;
 }
