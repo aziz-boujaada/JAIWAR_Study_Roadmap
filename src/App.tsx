@@ -9,11 +9,31 @@ import { presentationsData } from './data';
 import { Presentation } from './types';
 import { createPresentation, deletePresentation, fetchPresentations, updatePresentation } from './lib/presentationsApi';
 
+const LOCAL_STORAGE_KEY = 'study_roadmap_presentations';
+
+function loadCachedPresentations(): Presentation[] {
+  try {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
+
+    if (cached) {
+      const parsed = JSON.parse(cached) as Presentation[];
+
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    }
+  } catch {
+    // Ignore malformed cache
+  }
+
+  return presentationsData;
+}
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState<string>('dashboard');
   const [selectedPresentationId, setSelectedPresentationId] = useState<string | null>(null);
 
-  const [presentations, setPresentations] = useState<Presentation[]>([]);
+  const [presentations, setPresentations] = useState<Presentation[]>(() => loadCachedPresentations());
 
   React.useEffect(() => {
     let cancelled = false;
@@ -29,7 +49,7 @@ export default function App() {
         setPresentations(remotePresentations);
       } catch {
         if (!cancelled) {
-          setPresentations(presentationsData);
+          console.warn('Failed to fetch presentations from the backend. Showing cached data.');
         }
       }
     };
@@ -42,7 +62,11 @@ export default function App() {
   }, []);
 
   React.useEffect(() => {
-    localStorage.setItem('study_roadmap_presentations', JSON.stringify(presentations));
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(presentations));
+    } catch {
+      // Ignore quota errors
+    }
   }, [presentations]);
 
   const handleNavigate = (page: string, id?: string) => {

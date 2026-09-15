@@ -3,32 +3,44 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Presentation, Comment } from '../src/types';
 
-const schemaSql = `
-  CREATE TABLE IF NOT EXISTS presentations (
-    id TEXT PRIMARY KEY,
-    title TEXT NOT NULL,
-    author TEXT NOT NULL,
-    category TEXT NOT NULL,
-    date TEXT NOT NULL,
-    status TEXT NOT NULL,
-    shortDescription TEXT NOT NULL,
-    summary TEXT NOT NULL,
-    importantPoints TEXT NOT NULL,
-    concepts TEXT NOT NULL,
-    codeExamples TEXT NOT NULL,
-    sortOrder INTEGER NOT NULL,
-    presentationLink TEXT DEFAULT '',
-    likes INTEGER DEFAULT 0
-  );
-  CREATE TABLE IF NOT EXISTS comments (
-    id TEXT PRIMARY KEY,
-    presentationId TEXT NOT NULL,
-    author TEXT NOT NULL,
-    text TEXT NOT NULL,
-    date TEXT NOT NULL,
-    FOREIGN KEY (presentationId) REFERENCES presentations(id) ON DELETE CASCADE
-  );
-`;
+const schemaSql = [
+  {
+    sql: `
+      CREATE TABLE IF NOT EXISTS presentations (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        author TEXT NOT NULL,
+        category TEXT NOT NULL,
+        date TEXT NOT NULL,
+        status TEXT NOT NULL,
+        shortDescription TEXT NOT NULL,
+        summary TEXT NOT NULL,
+        importantPoints TEXT NOT NULL,
+        concepts TEXT NOT NULL,
+        codeExamples TEXT NOT NULL,
+        sortOrder INTEGER NOT NULL,
+        presentationLink TEXT DEFAULT '',
+        likes INTEGER DEFAULT 0
+      )
+    `,
+    args: [],
+  },
+  {
+    sql: `
+      CREATE TABLE IF NOT EXISTS comments (
+        id TEXT PRIMARY KEY,
+        presentationId TEXT NOT NULL,
+        author TEXT NOT NULL,
+        text TEXT NOT NULL,
+        date TEXT NOT NULL,
+        FOREIGN KEY (presentationId)
+          REFERENCES presentations(id)
+          ON DELETE CASCADE
+      )
+    `,
+    args: [],
+  },
+];
 
 const migrationSql = `
   ALTER TABLE presentations ADD COLUMN presentationLink TEXT DEFAULT '';
@@ -67,7 +79,7 @@ export async function getDatabase() {
 
   if (!schemaReady) {
     schemaReady = (async () => {
-      await client!.execute(schemaSql);
+      await client!.batch(schemaSql);
 
       const tableInfo = await client!.execute('PRAGMA table_info(presentations)');
       const existingColumnNames = new Set(tableInfo.rows.map((column) => column.name));
