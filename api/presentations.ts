@@ -33,6 +33,6 @@ export default async function handler(request: any, response: any) {
     return;
   }
 
-  response.setHeader('Allow', 'GET, POST');
+  response.setHeader('Allow', 'GET, POST' , 'PUT');
   response.status(405).json({ message: 'Method not allowed' });
 }

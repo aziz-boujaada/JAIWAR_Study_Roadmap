@@ -269,7 +269,8 @@ app.post('/api/presentations/:id/comments', (request, response) => {
     return;
   }
 
-  const comment: Partial<Comment> = request.body ?? {};
+  const rawBody = typeof request.body === 'string' ? JSON.parse(request.body) : request.body ?? {};
+  const comment: Partial<Comment> = rawBody as Partial<Comment>;
   const newComment: Comment = {
     id: comment.id ?? Date.now().toString(),
     presentationId: request.params.id,
@@ -324,16 +325,20 @@ app.delete('/api/presentations/:id/comments/:commentId', (request, response) => 
 });
 
 app.post('/api/presentations/:id/like', (request, response) => {
-  const existingPresentation = selectPresentationById.get(request.params.id);
+  const existingPresentation = selectPresentationById.get(request.params.id) as { likes: number; sortOrder: number } | undefined;
 
   if (!existingPresentation) {
     response.status(404).json({ message: 'Presentation not found' });
     return;
   }
 
-  incrementLikes.run(request.params.id);
-  const updated = selectPresentationById.get(request.params.id) as { likes: number };
-  response.json({ likes: updated.likes });
+  const rawBody = typeof request.body === 'string' ? JSON.parse(request.body) : request.body ?? {};
+  const shouldLike = rawBody?.liked === true;
+  const currentLikes = Number(existingPresentation.likes ?? 0);
+  const nextLikes = shouldLike ? currentLikes + 1 : Math.max(0, currentLikes - 1);
+
+  database.prepare('UPDATE presentations SET likes = ? WHERE id = ?').run(nextLikes, request.params.id);
+  response.json({ likes: nextLikes });
 });
 
 app.post('/api/presentations/:id/unlike', (request, response) => {
